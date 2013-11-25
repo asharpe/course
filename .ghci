@@ -8,3 +8,6 @@
 :set -fno-warn-type-defaults
 :set -XNoImplicitPrelude
 :set -XSafe
+
+data Hole = Hole
+

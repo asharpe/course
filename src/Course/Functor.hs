@@ -26,8 +26,8 @@ infixl 4 <$>
 -- >>> (+1) <$> Id 2
 -- Id 3
 instance Functor Id where
-  (<$>) =
-    error "todo"
+  (<$>) f a = Id $ f $ runId a
+    
 
 -- | Maps a function on the List functor.
 --
@@ -37,8 +37,8 @@ instance Functor Id where
 -- >>> (+1) <$> (1 :. 2 :. 3 :. Nil)
 -- [2,3,4]
 instance Functor List where
-  (<$>) =
-    error "todo"
+  (<$>) f l = map f l
+    
 
 -- | Maps a function on the Optional functor.
 --
@@ -48,16 +48,22 @@ instance Functor List where
 -- >>> (+1) <$> Full 2
 -- Full 3
 instance Functor Optional where
-  (<$>) =
-    error "todo"
+--  (<$>) _ Empty = Empty
+--  (<$>) f (Full a) = Full $ f a
+  (<$>) = mapOptional
+
 
 -- | Maps a function on the reader ((->) t) functor.
 --
 -- >>> ((+1) <$> (*2)) 8
 -- 17
 instance Functor ((->) t) where
-  (<$>) =
-    error "todo"
+--  (<$>) :: (a -> b) -> ((->) t) a -> ((->) t) b
+--  (<$>) :: (a -> b) -> (t -> a) -> ((->) t) b
+--  (<$>) :: (a -> b) -> (t -> a) -> (t -> b)
+--  (<$>) :: (a -> b) -> (t -> a) -> t -> b
+  (<$>) = (.)
+
 
 -- | Anonymous map. Maps a constant value on a functor.
 --
@@ -72,8 +78,11 @@ instance Functor ((->) t) where
   a
   -> f b
   -> f a
-(<$) =
-  error "todo"
+
+--(<$) a fb = (\_ -> a) <$> fb
+(<$) a fb = (<$>) (\_ -> a) fb
+--(<$) a fb = (const a) <$> fb
+ 
 
 -----------------------
 -- SUPPORT LIBRARIES --

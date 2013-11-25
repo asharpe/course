@@ -17,6 +17,7 @@ import qualified Prelude as P
 import qualified Numeric as N
 
 
+
 -- $setup
 -- >>> import Test.QuickCheck
 -- >>> import Course.Core(even, id, const)
@@ -70,8 +71,8 @@ headOr ::
   a
   -> List a
   -> a
-headOr =
-  error "todo"
+headOr a Nil = a
+headOr _ (a :. _)  = a
 
 -- | The product of the elements of a list.
 --
@@ -83,8 +84,9 @@ headOr =
 product ::
   List Int
   -> Int
-product =
-  error "todo"
+product Nil = 1
+product (a :. b) = a * product b
+
 
 -- | Sum the elements of the list.
 --
@@ -98,8 +100,10 @@ product =
 sum ::
   List Int
   -> Int
-sum =
-  error "todo"
+sum Nil = 0
+sum t = foldLeft (+) 0 t
+--sum (a :. b) = a + sum b
+
 
 -- | Return the length of the list.
 --
@@ -110,8 +114,9 @@ sum =
 length ::
   List a
   -> Int
-length =
-  error "todo"
+length Nil = 0
+length (_ :. a) = 1 + length a
+
 
 -- | Map the given function on each element of the list.
 --
@@ -125,8 +130,9 @@ map ::
   (a -> b)
   -> List a
   -> List b
-map =
-  error "todo"
+map _ Nil = Nil
+map f (a :. b) = ((f a) :. map f b)
+  
 
 -- | Return elements satisfying the given predicate.
 --
@@ -142,8 +148,14 @@ filter ::
   (a -> Bool)
   -> List a
   -> List a
-filter =
-  error "todo"
+filter _ Nil = Nil
+filter f (a :. b) =
+  case (f a) of
+	True -> (a :. (filter f b))
+	False -> filter f b
+
+--filter p = foldRight (\a -> if p a then (a :.) else id) Nil
+
 
 -- | Append two lists to a new list.
 --
@@ -161,8 +173,11 @@ filter =
   List a
   -> List a
   -> List a
-(++) =
-  error "todo"
+(++) Nil Nil = Nil
+(++) a Nil = a
+(++) Nil a = a
+(++) (a :. b) c = a :. (b ++ c)
+  
 
 infixr 5 ++
 
@@ -179,8 +194,8 @@ infixr 5 ++
 flatten ::
   List (List a)
   -> List a
-flatten =
-  error "todo"
+flatten = foldRight (++) Nil
+
 
 -- | Map a function then flatten to a list.
 --
@@ -196,8 +211,9 @@ flatMap ::
   (a -> List b)
   -> List a
   -> List b
-flatMap =
-  error "todo"
+flatMap f a = flatten $ map f a
+--flatMap f a = flatten . map f $ a
+
 
 -- | Convert a list of optional values to an optional list of values.
 --
@@ -224,8 +240,17 @@ flatMap =
 seqOptional ::
   List (Optional a)
   -> Optional (List a)
-seqOptional =
-  error "todo"
+seqOptional Nil = Full Nil
+--seqOptional Empty = Empty
+--seqOptional (h :. t) = if (h == Empty) Empty else Optional
+seqOptional (h :. t) =
+	case h of
+		Empty -> Empty
+		Full a -> case seqOptional t of
+			Empty -> Empty
+			Full q -> Full (a :. q)
+
+seqOptional'' = foldRight (\h t -> bindOptional (\a -> mapOptional (\q -> a :. q) t) h) (Full Nil)
 
 -- | Find the first element in the list matching the predicate.
 --
@@ -247,8 +272,14 @@ find ::
   (a -> Bool)
   -> List a
   -> Optional a
-find =
-  error "todo"
+find _ Nil = Empty
+find f (h:.t) = if f h then Full h else find f t
+
+--find f (h:.t) =
+--  case f h of
+--    True -> Full h
+--    False -> find f t
+
 
 -- | Reverse a list.
 --
@@ -261,8 +292,8 @@ find =
 reverse ::
   List a
   -> List a
-reverse =
-  error "todo"
+reverse = foldLeft (flip (:.)) Nil
+
 
 -- | Do anything other than reverse a list.
 --
@@ -275,8 +306,8 @@ reverse =
 notReverse ::
   List a
   -> List a
-notReverse =
-  error "todo"
+notReverse = reverse
+
 
 hlist ::
   List a
